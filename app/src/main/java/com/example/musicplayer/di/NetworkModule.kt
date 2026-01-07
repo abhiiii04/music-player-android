@@ -17,14 +17,16 @@ object NetworkModule {
 
     @Provides
     @Singleton
-    fun provideRetrofit(): Retrofit =
-        Retrofit.Builder()
+    fun provideRetrofit(): Retrofit {
+        return Retrofit.Builder()
             .baseUrl(BASE_URL)
             .addConverterFactory(GsonConverterFactory.create())
             .build()
+    }
 
     @Provides
     @Singleton
-    fun provideSaavnApi(retrofit: Retrofit): SaavnApi =
-        retrofit.create(SaavnApi::class.java)
+    fun provideSaavnApi(retrofit: Retrofit): SaavnApi {
+        return retrofit.create(SaavnApi::class.java)
+    }
 }
