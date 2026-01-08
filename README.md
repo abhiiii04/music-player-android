@@ -106,6 +106,8 @@ Trade-offs
 
 5.These trade-offs were made to keep the codebase clean, readable, and focused on core playback functionality.
 
+APK Download
+[Download Debug APK](apk/music-player-debug.apk)
 
 
 
