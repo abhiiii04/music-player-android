@@ -9,7 +9,9 @@ import androidx.compose.material.icons.filled.PlayArrow
 import androidx.compose.material.icons.filled.SkipNext
 import androidx.compose.material.icons.filled.SkipPrevious
 import androidx.compose.material3.*
-import androidx.compose.runtime.Composable
+import androidx.compose.runtime.*
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -28,6 +30,19 @@ fun FullPlayerScreen(
     onBackClick: () -> Unit
 ) {
     val song = state.song ?: return
+
+
+    var isDragging by remember { mutableStateOf(false) }
+
+
+    var sliderPosition by remember { mutableFloatStateOf(0f) }
+
+
+    LaunchedEffect(state.position) {
+        if (!isDragging) {
+            sliderPosition = state.position.toFloat()
+        }
+    }
 
     Scaffold(
         topBar = {
@@ -70,13 +85,6 @@ fun FullPlayerScreen(
 
             Spacer(modifier = Modifier.height(6.dp))
 
-            Text(
-                text = song.title,
-                style = MaterialTheme.typography.headlineSmall
-            )
-
-            Spacer(modifier = Modifier.height(6.dp))
-
 
             Text(
                 text = song.artist,
@@ -88,12 +96,36 @@ fun FullPlayerScreen(
 
 
             Slider(
-                value = state.position.toFloat(),
-                onValueChange = { onSeek(it.toLong()) },
+                value = sliderPosition,
+                onValueChange = { newValue ->
+                    isDragging = true
+                    sliderPosition = newValue
+                },
+                onValueChangeFinished = {
+
+                    onSeek(sliderPosition.toLong())
+                    isDragging = false
+                },
                 valueRange = 0f..state.duration.toFloat().coerceAtLeast(1f)
             )
 
+
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween
+            ) {
+                Text(
+                    text = formatTime(sliderPosition.toLong()),
+                    style = MaterialTheme.typography.bodySmall
+                )
+                Text(
+                    text = formatTime(state.duration),
+                    style = MaterialTheme.typography.bodySmall
+                )
+            }
+
             Spacer(modifier = Modifier.height(32.dp))
+
 
             Row(
                 verticalAlignment = Alignment.CenterVertically,
@@ -121,6 +153,7 @@ fun FullPlayerScreen(
                         modifier = Modifier.size(72.dp)
                     )
                 }
+
                 IconButton(onClick = onNextClick) {
                     Icon(
                         imageVector = Icons.Default.SkipNext,
@@ -133,3 +166,11 @@ fun FullPlayerScreen(
     }
 }
 
+
+fun formatTime(ms: Long): String {
+    if (ms <= 0) return "00:00"
+    val totalSeconds = ms / 1000
+    val minutes = totalSeconds / 60
+    val seconds = totalSeconds % 60
+    return String.format("%02d:%02d", minutes, seconds)
+}
